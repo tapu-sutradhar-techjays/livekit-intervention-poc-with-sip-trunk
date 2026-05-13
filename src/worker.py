@@ -34,6 +34,10 @@ async def entrypoint(ctx: JobContext) -> None:
     )
 
     await session.start(agent=BasicsAgent(), room=ctx.room)
+
+    from src.agents.takeover import register_takeover_rpcs
+    register_takeover_rpcs(session, ctx.room.local_participant)
+
     logger.info("Session started in room %s", ctx.room.name)
 
     # The session will run until the SIP participant disconnects or we explicitly close.
