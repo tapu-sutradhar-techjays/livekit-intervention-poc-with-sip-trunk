@@ -16,8 +16,12 @@ logger = logging.getLogger("ibv-spike")
 
 
 async def entrypoint(ctx: JobContext) -> None:
-    from src.tracing import init_tracing
-    init_tracing()
+    try:
+        from src.tracing import init_tracing
+        init_tracing()
+    except ImportError:
+        # Tracing extras (opentelemetry-*) not installed — skip silently.
+        pass
     logger.info("Entrypoint received job %s, metadata=%s", ctx.job.id, ctx.job.metadata)
     await ctx.connect()
 

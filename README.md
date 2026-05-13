@@ -5,8 +5,15 @@
 ## Quick start
 
 1. Copy `.env.example` to `.env` and fill in all values.
-2. `uv sync`
+2. `uv sync --all-extras`
 3. `uv run python scripts/provision_sip_trunk.py` (one time)
 4. Add returned `LIVEKIT_SIP_TRUNK_ID` to `.env`
 5. Start worker in one terminal: `uv run python src/worker.py dev`
 6. Place call in another: `uv run python scripts/place_call.py`
+
+## Supervisor UI (Day 3)
+
+Same `.env` and worker. Add two terminals:
+
+7. API server: `uv run uvicorn src.server.main:app --reload --port 8001`
+8. Frontend: `cd frontend && npm install && npm run dev` — opens on http://localhost:5173, click **Place Call**.
