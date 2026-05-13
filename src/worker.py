@@ -16,6 +16,8 @@ logger = logging.getLogger("ibv-spike")
 
 
 async def entrypoint(ctx: JobContext) -> None:
+    from src.tracing import init_tracing
+    init_tracing()
     logger.info("Entrypoint received job %s, metadata=%s", ctx.job.id, ctx.job.metadata)
     await ctx.connect()
 
