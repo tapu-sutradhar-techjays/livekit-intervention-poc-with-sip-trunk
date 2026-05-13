@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>SmartCaller Spike — Supervisor Console</title>
+    <style>
+      body { font-family: ui-sans-serif, system-ui; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+      #status { padding: 0.5rem; background: #f3f4f6; border-radius: 4px; margin-bottom: 1rem; }
+      #transcript { border: 1px solid #ddd; padding: 1rem; height: 400px; overflow-y: auto; background: #fafafa; }
+      .line { margin-bottom: 0.5rem; }
+      .line.rep { color: #1e40af; }
+      .line.agent { color: #166534; }
+      .line.supervisor { color: #b91c1c; font-style: italic; }
+      button { padding: 0.75rem 1.5rem; margin-right: 0.5rem; cursor: pointer; }
+      button.active { background: #dc2626; color: white; }
+    </style>
+  </head>
+  <body>
+    <h1>Supervisor Console</h1>
+    <div id="status">Disconnected</div>
+    <div>
+      <button id="place-call">Place Call</button>
+      <button id="take-over" disabled>Take Over</button>
+      <button id="hand-back" disabled>Hand Back</button>
+    </div>
+    <h2>Live Transcript</h2>
+    <div id="transcript"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
