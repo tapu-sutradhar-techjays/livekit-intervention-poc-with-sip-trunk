@@ -13,6 +13,7 @@
       .line.supervisor { color: #b91c1c; font-style: italic; }
       button { padding: 0.75rem 1.5rem; margin-right: 0.5rem; cursor: pointer; }
       button.active { background: #dc2626; color: white; }
+      button.muted { background: #f3f4f6; color: #6b7280; }
     </style>
   </head>
   <body>
@@ -22,9 +23,11 @@
       <button id="place-call">Place Call</button>
       <button id="take-over" disabled>Take Over</button>
       <button id="hand-back" disabled>Hand Back</button>
+      <button id="mute" disabled>Unmute Mic</button>
     </div>
     <h2>Live Transcript</h2>
     <div id="transcript"></div>
+    <div id="audio-tracks" hidden></div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
