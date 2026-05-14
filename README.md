@@ -9,7 +9,7 @@
 3. Register the outbound SIP trunk and put the returned ID into `.env` as `LIVEKIT_SIP_TRUNK_ID`. Pick one:
    - **LiveKit Cloud console (recommended)** — `SIP → Trunks → Create outbound`, point at your Twilio Elastic SIP Trunk URI + creds, copy the resulting trunk ID. Skip the four `TWILIO_*` env vars.
    - **Script path** — fill the four `TWILIO_*` vars in `.env`, then `uv run python scripts/provision_sip_trunk.py` (one time).
-4. Start worker in one terminal: `uv run python src/worker.py dev`
+4. Start worker in one terminal: `uv run python -m src.worker dev`
 5. Place call in another: `uv run python scripts/place_call.py`
 
 ## Supervisor UI (Day 3)
