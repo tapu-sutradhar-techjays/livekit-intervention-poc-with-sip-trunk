@@ -19,7 +19,7 @@ def init_tracing() -> None:
                 endpoint="https://api.smith.langchain.com/otel/v1/traces",
                 headers={
                     "x-api-key": api_key,
-                    "Langsmith-Project": os.getenv("LANGSMITH_PROJECT", "smartcaller-spike"),
+                    "Langsmith-Project": os.getenv("LANGSMITH_PROJECT", "vera-spike"),
                 },
             )
         )
