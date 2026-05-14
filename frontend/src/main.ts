@@ -16,8 +16,10 @@ const placeBtn = document.getElementById("place-call") as HTMLButtonElement;
 const takeBtn = document.getElementById("take-over") as HTMLButtonElement;
 const handBtn = document.getElementById("hand-back") as HTMLButtonElement;
 const muteBtn = document.getElementById("mute") as HTMLButtonElement;
+const endBtn = document.getElementById("end-call") as HTMLButtonElement;
 
 let room: Room | null = null;
+let currentRoom: string | null = null;
 let micOn = false;
 
 function renderMuteBtn() {
@@ -60,11 +62,14 @@ placeBtn.addEventListener("click", async () => {
     takeBtn.disabled = true;
     handBtn.disabled = true;
     muteBtn.disabled = true;
+    endBtn.disabled = true;
     placeBtn.disabled = false;
     audioEl.replaceChildren();
+    currentRoom = null;
   });
 
   await room.connect(livekit_url, supervisor_token);
+  currentRoom = roomName;
   // Chrome blocks autoplay until a user gesture — startAudio unlocks it (we're inside a click handler).
   await room.startAudio();
   // Pre-publish mic muted so takeover toggle has zero connection-setup latency.
@@ -72,6 +77,7 @@ placeBtn.addEventListener("click", async () => {
   statusEl.textContent = `Connected to ${roomName} — supervising (listening)`;
   takeBtn.disabled = false;
   muteBtn.disabled = false;
+  endBtn.disabled = false;
 });
 
 takeBtn.addEventListener("click", async () => {
@@ -99,4 +105,22 @@ handBtn.addEventListener("click", async () => {
 muteBtn.addEventListener("click", async () => {
   if (!room) return;
   await setMic(!micOn);
+});
+
+endBtn.addEventListener("click", async () => {
+  if (!currentRoom) return;
+  endBtn.disabled = true;
+  statusEl.textContent = "Ending call...";
+  try {
+    const resp = await fetch("http://localhost:8001/end-call", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ room: currentRoom }),
+    });
+    if (!resp.ok) throw new Error(`end-call HTTP ${resp.status}`);
+    // The room.on(Disconnected) handler resets everything else.
+  } catch (err) {
+    statusEl.textContent = `End call failed: ${err instanceof Error ? err.message : String(err)}`;
+    endBtn.disabled = false;
+  }
 });

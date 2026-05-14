@@ -14,6 +14,8 @@
       button { padding: 0.75rem 1.5rem; margin-right: 0.5rem; cursor: pointer; }
       button.active { background: #dc2626; color: white; }
       button.muted { background: #f3f4f6; color: #6b7280; }
+      button.danger { background: #111827; color: white; }
+      button.danger:disabled { background: #9ca3af; }
     </style>
   </head>
   <body>
@@ -24,6 +26,7 @@
       <button id="take-over" disabled>Take Over</button>
       <button id="hand-back" disabled>Hand Back</button>
       <button id="mute" disabled>Unmute Mic</button>
+      <button id="end-call" class="danger" disabled>End Call</button>
     </div>
     <h2>Live Transcript</h2>
     <div id="transcript"></div>

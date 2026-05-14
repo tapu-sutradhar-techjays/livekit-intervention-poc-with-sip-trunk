@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from livekit import api
+from livekit.api.twirp_client import TwirpError
 from pydantic import BaseModel
 
 from src.server.tokens import supervisor_token
@@ -74,3 +75,25 @@ async def issue_token(room: str) -> TokenResponse:
         token=supervisor_token(room, identity=f"sup-{uuid.uuid4().hex[:6]}"),
         livekit_url=os.environ["LIVEKIT_URL"],
     )
+
+
+class EndCallRequest(BaseModel):
+    room: str
+
+
+@app.post("/end-call", status_code=204)
+async def end_call(req: EndCallRequest) -> None:
+    """Force-end a call by deleting the LiveKit room.
+
+    LiveKit disconnects every participant (agent + SIP) and sends BYE to the
+    carrier, so this hangs up Twilio's leg too. 404 from LiveKit means the
+    room already ended — treated as success (idempotent).
+    """
+    lkapi = api.LiveKitAPI()
+    try:
+        await lkapi.room.delete_room(api.DeleteRoomRequest(room=req.room))
+    except TwirpError as e:
+        if e.code != "not_found":
+            raise
+    finally:
+        await lkapi.aclose()
