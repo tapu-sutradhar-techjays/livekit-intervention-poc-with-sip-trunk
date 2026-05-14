@@ -4,6 +4,7 @@ import asyncio
 import datetime as dt
 from dotenv import load_dotenv
 from livekit import api
+from livekit.api.twirp_client import TwirpError
 
 load_dotenv()
 
@@ -29,7 +30,13 @@ async def main() -> None:
             return
         for r in rooms:
             print(f"\nRoom: {r.name}  (sid={r.sid}, age={_age(r.creation_time)}, participants={r.num_participants})")
-            parts = (await lkapi.room.list_participants(api.ListParticipantsRequest(room=r.name))).participants
+            try:
+                parts = (await lkapi.room.list_participants(api.ListParticipantsRequest(room=r.name))).participants
+            except TwirpError as e:
+                if e.code == "not_found":
+                    print("  (room ended between list and detail fetch)")
+                    continue
+                raise
             for p in parts:
                 joined = _age(p.joined_at) if p.joined_at else "?"
                 print(f"  - {p.identity:20s}  state={p.state}  joined={joined}  name={p.name!r}")
