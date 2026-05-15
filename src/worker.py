@@ -26,9 +26,10 @@ async def entrypoint(ctx: JobContext) -> None:
     await ctx.connect()
 
     metadata = json.loads(ctx.job.metadata or "{}")
+    # Default queue keeps `console`-mode runs (no dispatch metadata) usable.
     userdata = CallUserData(
         call_id=metadata.get("call_id", ctx.job.id),
-        patient_queue=metadata.get("patients", []),
+        patient_queue=metadata.get("patients") or ["patient-A", "patient-B"],
     )
 
     session: AgentSession[CallUserData] = AgentSession[CallUserData](

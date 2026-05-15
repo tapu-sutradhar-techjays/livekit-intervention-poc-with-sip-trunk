@@ -18,3 +18,13 @@ Same `.env` and worker. Add two terminals:
 
 6. API server: `uv run uvicorn src.server.main:app --reload --port 8001`
 7. Frontend: `cd frontend && npm install && npm run dev` — opens on http://localhost:5173, click **Place Call**.
+
+## Local CLI test (no telephony, no browser)
+
+Talk to the agent through your laptop mic + speakers — bypasses LiveKit Cloud, Twilio, and the browser entirely. Useful for iterating on prompts / agent handoff:
+
+```
+uv run python -m src.worker console
+```
+
+Ctrl-C to exit. Patient queue defaults to `["patient-A", "patient-B"]` so the BasicsAgent → CoverageAgent handoff still triggers.
