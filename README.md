@@ -9,15 +9,11 @@
 3. Register the outbound SIP trunk and put the returned ID into `.env` as `LIVEKIT_SIP_TRUNK_ID`. Pick one:
    - **LiveKit Cloud console (recommended)** — `SIP → Trunks → Create outbound`, point at your Twilio Elastic SIP Trunk URI + creds, copy the resulting trunk ID. Skip the four `TWILIO_*` env vars.
    - **Script path** — fill the four `TWILIO_*` vars in `.env`, then `uv run python scripts/provision_sip_trunk.py` (one time).
-4. Start worker in one terminal: `uv run python -m src.worker dev`
-5. Place call in another: `uv run python scripts/place_call.py`
+4. Start all three services in one go: `./scripts/start.sh` — boots worker, FastAPI :8001, Vite :5173 in the background; logs to `.logs/`, PIDs to `.pids/`.
+5. Place a call from the CLI: `uv run python scripts/place_call.py` — or open http://localhost:5173 and click **Place Call** to use the supervisor UI.
+6. Stop everything cleanly: `./scripts/stop.sh` — ends any active LiveKit rooms first (so Twilio's SIP leg drops), then kills the three services and verifies ports + rooms are clean.
 
-## Supervisor UI (Day 3)
-
-Same `.env` and worker. Add two terminals:
-
-6. API server: `uv run uvicorn src.server.main:app --reload --port 8001`
-7. Frontend: `cd frontend && npm install && npm run dev` — opens on http://localhost:5173, click **Place Call**.
+To run pieces individually instead: see `scripts/start.sh` for the commands.
 
 ## Local CLI test (no telephony, no browser)
 
