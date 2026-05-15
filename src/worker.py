@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from livekit.agents import JobContext, WorkerOptions, cli
 from livekit.agents.voice import AgentSession
 from livekit.plugins import openai, deepgram, cartesia, silero
+from livekit.plugins.turn_detector.english import EnglishModel
 
 from src.agents.basics_agent import BasicsAgent
 from src.agents.shared import CallUserData
@@ -35,8 +36,11 @@ async def entrypoint(ctx: JobContext) -> None:
     session: AgentSession[CallUserData] = AgentSession[CallUserData](
         userdata=userdata,
         vad=silero.VAD.load(),
+        # Semantic end-of-turn detection cuts ~200-400ms off "user is done"
+        # and reduces mid-sentence cutoffs vs. pure silence-threshold VAD.
+        turn_detection=EnglishModel(),
         stt=deepgram.STT(model="nova-3"),
-        llm=openai.LLM(model="gpt-4o-mini"),
+        llm=openai.LLM(model="gpt-5.4-mini"),
         tts=cartesia.TTS(voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
     )
 
