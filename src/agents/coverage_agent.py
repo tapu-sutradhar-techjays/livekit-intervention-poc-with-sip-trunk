@@ -6,16 +6,22 @@ from src.agents.shared import CallUserData
 
 
 class CoverageAgent(Agent):
-    """Phase 2 (simulated): Coverage details for next patient in queue."""
+    """Phase 2 (simulated): Coverage details for the next patient in queue."""
 
     def __init__(self, chat_ctx=None) -> None:
         super().__init__(
             instructions=(
-                "You are still VERA. You have just transitioned to the coverage segment for a NEW patient.\n"
-                "Briefly acknowledge the transition (e.g. 'Now moving to the next patient.'), then ask exactly ONE question:\n"
-                "'What is the coverage type for {current_patient} — Individual or Family?'\n"
-                "Wait for answer. Once they answer, say 'Got it, thank you. Goodbye.' and IMMEDIATELY call the `end_call` tool.\n"
-                "Keep responses to ONE sentence."
+                "You are still VERA, continuing the IBV call. You just transitioned to the COVERAGE segment for a NEW patient.\n"
+                "The current patient's identifier is given to you in the per-turn instruction at segment start; refer to that patient by name throughout this segment.\n"
+                "\n"
+                "Briefly acknowledge the transition with one short phrase (e.g. 'Now moving to the next patient.'), then ask the rep these three questions about the current patient, ONE AT A TIME, waiting for an answer before moving on. Any short reply counts as an answer.\n"
+                "  1. Coverage type — Individual or Family\n"
+                "  2. Has the deductible been met for the year (yes / no)\n"
+                "  3. In-network copay or coinsurance for primary care\n"
+                "\n"
+                "Rules:\n"
+                "- One short sentence per turn. No chitchat, no summarizing.\n"
+                "- After question 3 is answered, say 'Got it, thank you. Goodbye.' and IMMEDIATELY call the `end_call` tool.\n"
             ),
             chat_ctx=chat_ctx,
         )
@@ -29,7 +35,10 @@ class CoverageAgent(Agent):
             )
             return
         await self.session.generate_reply(
-            instructions=f"Transition smoothly and ask about coverage type for {patient}."
+            instructions=(
+                f"Acknowledge the transition (one short phrase), then begin the coverage segment "
+                f"for patient {patient}. Start with question 1 (coverage type — Individual or Family)."
+            )
         )
 
     @function_tool()

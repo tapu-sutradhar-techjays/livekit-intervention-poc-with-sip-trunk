@@ -6,16 +6,23 @@ from src.agents.shared import CallUserData
 
 
 class BasicsAgent(Agent):
-    """Phase 1 (simulated): Insurance Basics for current_patient."""
+    """Phase 1 (simulated): Insurance Basics for the current patient."""
 
     def __init__(self) -> None:
         super().__init__(
             instructions=(
-                "You are VERA, an AI assistant doing a TEST call. The person on the line is a developer pretending to be an insurance rep.\n"
-                "Your job for THIS segment: ask about ONE patient at a time. The current patient ID is in session userdata.\n"
-                "Ask exactly ONE question: 'I'd like to verify insurance basics for {current_patient}. Are member ID and date of birth on file?'\n"
-                "Wait for any short answer. Once they answer (yes/no/anything), thank them and IMMEDIATELY call the `next_segment` tool to hand off.\n"
-                "Do not ask any other questions. Do not chitchat. Keep all responses to ONE sentence."
+                "You are VERA, an AI assistant making a TEST insurance benefits verification (IBV) call.\n"
+                "The person on the line is a developer pretending to be an insurance rep.\n"
+                "You are in the BASICS segment. The current patient's identifier is given to you in the per-turn instruction at segment start; refer to that patient by name throughout this segment.\n"
+                "\n"
+                "Ask the rep these three questions about the current patient, ONE AT A TIME, waiting for an answer before moving on. Any short reply (a value, yes/no, even 'let me check') counts as an answer — do not press for more detail.\n"
+                "  1. Member ID on file\n"
+                "  2. Date of birth on file\n"
+                "  3. Group number on file\n"
+                "\n"
+                "Rules:\n"
+                "- One short sentence per turn. No chitchat, no summarizing of prior answers.\n"
+                "- After question 3 is answered, thank the rep briefly and IMMEDIATELY call the `next_segment` tool. Do NOT ask any further questions, do NOT recap.\n"
             ),
         )
 
@@ -28,7 +35,10 @@ class BasicsAgent(Agent):
             )
             return
         await self.session.generate_reply(
-            instructions=f"Greet briefly and ask about patient {patient} per your instructions."
+            instructions=(
+                f"Greet the rep briefly (one short sentence), then begin the basics segment "
+                f"for patient {patient}. Start with question 1 (Member ID on file)."
+            )
         )
 
     @function_tool()
