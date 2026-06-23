@@ -4,7 +4,7 @@ import json
 import os
 import uuid
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from livekit import api
 from livekit.api.twirp_client import TwirpError
@@ -45,16 +45,30 @@ async def place_call() -> PlaceCallResponse:
                 }),
             )
         )
-        await lkapi.sip.create_sip_participant(
-            api.CreateSIPParticipantRequest(
-                sip_trunk_id=os.environ["LIVEKIT_SIP_TRUNK_ID"],
-                sip_call_to=os.environ["TEST_REP_PHONE_NUMBER"],
-                room_name=room_name,
-                participant_identity="rep",
-                participant_name="Insurance Rep (test)",
-                wait_until_answered=False,
+        # wait_until_answered=True so a failed dial (e.g. SIP 486 Busy, geo-blocked,
+        # unverified number) raises here instead of being silently swallowed —
+        # otherwise the agent sits in the room and /place-call lies with 200 OK.
+        try:
+            await lkapi.sip.create_sip_participant(
+                api.CreateSIPParticipantRequest(
+                    sip_trunk_id=os.environ["LIVEKIT_SIP_TRUNK_ID"],
+                    sip_call_to=os.environ["TEST_REP_PHONE_NUMBER"],
+                    room_name=room_name,
+                    participant_identity="rep",
+                    participant_name="Insurance Rep (test)",
+                    wait_until_answered=True,
+                )
             )
-        )
+        except TwirpError as e:
+            # The dial failed — tear down the room so the dispatched agent doesn't
+            # linger waiting for a rep that will never join.
+            try:
+                await lkapi.room.delete_room(api.DeleteRoomRequest(room=room_name))
+            except TwirpError:
+                pass
+            sip_status = e.metadata.get("sip_status") if e.metadata else None
+            detail = f"Call failed: {sip_status or e.message}"
+            raise HTTPException(status_code=502, detail=detail) from e
     finally:
         await lkapi.aclose()
     return PlaceCallResponse(

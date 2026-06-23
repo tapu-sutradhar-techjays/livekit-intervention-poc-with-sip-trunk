@@ -38,6 +38,13 @@ placeBtn.addEventListener("click", async () => {
   placeBtn.disabled = true;
   statusEl.textContent = "Placing call...";
   const resp = await fetch("http://localhost:8001/place-call", { method: "POST" });
+  if (!resp.ok) {
+    // Dial failed (e.g. SIP 486 Busy, geo-blocked, unverified number).
+    const { detail } = await resp.json().catch(() => ({ detail: resp.statusText }));
+    statusEl.textContent = detail ?? "Call failed";
+    placeBtn.disabled = false;
+    return;
+  }
   const { supervisor_token, livekit_url, room: roomName } = await resp.json();
 
   room = new Room({ adaptiveStream: true });

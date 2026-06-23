@@ -5,7 +5,7 @@ import logging
 from dotenv import load_dotenv
 from livekit.agents import JobContext, WorkerOptions, cli
 from livekit.agents.voice import AgentSession
-from livekit.plugins import openai, deepgram, cartesia, silero
+from livekit.plugins import google, deepgram, cartesia, silero
 from livekit.plugins.turn_detector.english import EnglishModel
 
 from src.agents.basics_agent import BasicsAgent
@@ -40,9 +40,17 @@ async def entrypoint(ctx: JobContext) -> None:
         # and reduces mid-sentence cutoffs vs. pure silence-threshold VAD.
         turn_detection=EnglishModel(),
         stt=deepgram.STT(model="nova-3"),
-        llm=openai.LLM(model="gpt-5.4-mini"),
+        # Vertex AI auth via Application Default Credentials (gcloud ADC).
+        llm=google.LLM(model="gemini-2.5-flash", vertexai=True),
         tts=cartesia.TTS(voice="79a125e8-cd45-4c13-8a67-188112f4dd22"),
     )
+
+    # Wait for the dialed rep (SIP participant) to actually answer before the
+    # agent starts talking — otherwise BasicsAgent.on_enter greets an empty room
+    # while the outbound call is still ringing (or was rejected, e.g. SIP 486 Busy).
+    logger.info("Waiting for rep participant to join room %s", ctx.room.name)
+    participant = await ctx.wait_for_participant(identity="rep")
+    logger.info("Rep participant joined: %s", participant.identity)
 
     await session.start(agent=BasicsAgent(), room=ctx.room)
 
